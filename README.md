@@ -30,6 +30,14 @@ nnoremap <Leader>kj :call Complete('F app/javascripts*')<CR>
 
 Or whatever other mappings suit your fancy.
 
+#### Options
+
+Just one so far!
+
+```vim
+call Complete('b', { 'maxheight': 20 })
+```
+
 #### About
 
 This plugin was heavily inspired by
@@ -40,9 +48,7 @@ a chain of `echo` commands to communicate the completions.
 There's a lot of work and configuration left to be done with this plugin. Some ideas I have:
 
 * Add a cursor and mappings for arrow keys
-* Add case-sensitive/insensitivity
 * Allow for number assignments for quick-access to results
-* Customize the max number of results shown
 * Customize position of the window
 * Being able to tab through the list
 
