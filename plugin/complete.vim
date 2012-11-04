@@ -166,7 +166,6 @@ function! Complete(cmd)
   call s:printCompletions()
   while 1
     if s:completeLoop() == 0
-      let g:completions = s:completions
       return 0 " leave!
     endif
   endwhile
