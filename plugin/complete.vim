@@ -166,7 +166,15 @@ function! Complete(cmd)
   call s:printCompletions()
   while 1
     if s:completeLoop() == 0
-      return 0 " leave!
+      break
     endif
   endwhile
+
+  " sometimes we get into a nasty state where netrw shits on everything
+  if getbufvar(s:execedBufferNr, '&ft') == 'netrw' &&
+        \ winheight('') < 10
+    only
+    let s:hasRun = 1
+  endif
+  return 0
 endfunction
