@@ -7,7 +7,7 @@ if exists("*Complete") || v:version < 700
 endif
 
 let s:completeDefaults = {
-      \ 'maxheight': 8
+      \ 'maxheight': 14
     \ }
 
 " moves the current context into the stream buffer
