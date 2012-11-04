@@ -6,6 +6,10 @@ if exists("*Complete") || v:version < 700
   finish
 endif
 
+let s:completeDefaults = {
+      \ 'maxheight': 8
+    \ }
+
 " moves the current context into the stream buffer
 function! s:goToStreamBuffer()
   if !exists('s:streamBufferNr')
@@ -29,7 +33,8 @@ function! s:printToStream(lines)
   normal ggdG
 
   " set its height to the completion list length
-  let height = len(a:lines) > 8 ? 8 : len(a:lines)
+  let height = len(a:lines) > s:options.maxheight ?
+        \ s:options.maxheight : len(a:lines)
   redraw
   execute "silent! normal z" . height . "\<CR>"
 
@@ -37,7 +42,7 @@ function! s:printToStream(lines)
   if len(a:lines) > 0
     for line in a:lines
       " limit yoself
-      if i > 8
+      if i > s:options.maxheight
         break
       endif
 
@@ -74,6 +79,28 @@ function! s:printCompletions()
   call s:printToStream(s:completions)
   redraw
   echo ':' . s:cmd . s:args
+  return 0
+endfunction
+
+" takes in a dictionary and configures various script settings
+function! s:setOptions(options)
+  if empty(a:options)
+    return 0
+  endif
+
+  " if we're just setting the options to the defaults, just copy the list
+  if a:options == s:completeDefaults
+    let s:options = copy(s:completeDefaults)
+    return 0
+  endif
+
+  let s:options = {}
+
+  for option in keys(s:completeDefaults)
+    let s:options[option] = has_key(a:options, option) ?
+          \ a:options[option] : s:completeDefaults[option]
+  endfor
+
   return 0
 endfunction
 
@@ -127,8 +154,8 @@ function! s:completeLoop()
 endfunction
 
 " main function - call with a command to initialize a complete-as-you-type
-" buffer
-function! Complete(cmd)
+" buffer. 2nd optional argument is a dictionary of options
+function! Complete(cmd, ...)
   let s:cursorline = &cursorline
   let s:laststatus = &laststatus
   let s:more       = &more
@@ -149,6 +176,13 @@ function! Complete(cmd)
     let s:args .= matchstr(a:cmd, '\s\zs\S\+\ze$')
   else
     let s:cmd = a:cmd
+  endif
+
+  " if there was an options object given
+  if a:0 > 0 && type(a:1) == 4
+    call s:setOptions(a:1)
+  else
+    call s:setOptions(s:completeDefaults)
   endif
 
   " create the stream
