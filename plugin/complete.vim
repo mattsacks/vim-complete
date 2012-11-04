@@ -205,10 +205,14 @@ function! Complete(cmd, ...)
   endwhile
 
   " sometimes we get into a nasty state where netrw shits on everything
-  if getbufvar(s:execedBufferNr, '&ft') == 'netrw' &&
-        \ winheight('') < 10
-    only
-    let s:hasRun = 1
+  if getbufvar(s:execedBufferNr, '&ft') == 'netrw'
+    if winheight('') < 10
+      only
+
+    " if this is a scratch buffer because of cancelling out from netrw
+    elseif empty(expand("%:p"))
+      close
+    endif
   endif
   return 0
 endfunction
