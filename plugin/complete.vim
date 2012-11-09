@@ -11,19 +11,19 @@ let s:completeDefaults = {
     \ }
 
 " moves the current context into the stream buffer
-function! s:goToStreamBuffer()
-  if !exists('s:streamBufferNr')
+function! s:goToStream()
+  if !exists('s:streamWinNr')
     return 0
   endif
-  execute "silent! b" . s:streamBufferNr
-  return ''
+  execute s:streamWinNr . "wincmd w"
+  return 0
 endfunction
 
 " prints to the stream buffer
 " a second argument of 1 can be passed to append to the stream
 " otherwise, it will overwrite all contents in the stream
 function! s:printToStream(lines)
-  if !exists('s:streamBufferNr')
+  if !exists('s:streamWinNr')
     return 0
   endif
 
@@ -74,7 +74,7 @@ endfunction
 " takes the given command + anything typed and prints the completions into the
 " stream buffer
 function! s:printCompletions()
-  exec "silent! b" . s:execedBufferNr
+  exec s:execedWinNr . "wincmd w"
   let s:completions = s:getCommandCompletions(s:cmd . s:args)
   call s:printToStream(s:completions)
   redraw
@@ -107,8 +107,7 @@ endfunction
 " cleans up any changed settings and configurations
 function! s:cleanup()
   " remove the stream buffer
-  call s:goToStreamBuffer()
-  bd!
+  exec "silent! bd! " . s:streamBufferNr
 
   exec "set laststatus=" . s:laststatus
   if s:more | set more | endif
@@ -131,7 +130,8 @@ function! s:completeLoop()
   if input == "\<CR>" 
     call s:cleanup()
     if len(s:completions) > 0
-      execute "silent! " .s:cmd . ' ' . s:completions[0]
+      execute s:execedWinNr . "wincmd w"
+      execute 'silent! ' . s:cmd . ' ' . s:completions[0]
     endif
     return 0
 
@@ -143,6 +143,7 @@ function! s:completeLoop()
   " if the input is CTRL-C or ESC
   elseif input == "\<C-c>" || input == "\<C-[>"
     call s:cleanup()
+    exec s:execedWinNr . "wincmd w"
     return 0
 
   else
@@ -161,6 +162,7 @@ function! Complete(cmd, ...)
   let s:more       = &more
   let s:ctrlAMap   = maparg("<C-a>", "c")
   let s:execedBufferNr = bufnr('')
+  let s:execedWinNr = winnr()
 
   set laststatus=0
   set nomore
@@ -193,7 +195,7 @@ function! Complete(cmd, ...)
     wincmd J
   endif
 
-  " the stream buf number
+  let s:streamWinNr    = winnr()
   let s:streamBufferNr = bufnr('')
 
   " initialize
