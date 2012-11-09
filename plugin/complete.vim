@@ -27,14 +27,14 @@ function! s:printToStream(lines)
     return 0
   endif
 
-  call s:goToStreamBuffer()
+  call s:goToStream()
 
   " clear all text inside of the stream
-  normal ggdG
+  0,$delete
 
   " set its height to the completion list length
   let height = len(a:lines) > s:options.maxheight ?
-        \ s:options.maxheight : len(a:lines)
+        \ s:options.maxheight : len(a:lines) ? len(a:lines) : 1
   redraw
   execute "silent! normal z" . height . "\<CR>"
 
@@ -109,12 +109,11 @@ function! s:cleanup()
   " remove the stream buffer
   exec "silent! bd! " . s:streamBufferNr
 
-  exec "set laststatus=" . s:laststatus
   if s:more | set more | endif
 
   " restore the <C-a> mapping in command mode
-  if !empty("s:ctrlAMap")
-    exec "cno <C-a> " . s:ctrlAMap
+  if exists("s:ctrlAMap")
+    exec "silent! cnoremap <C-a> " . s:ctrlAMap
   endif
 
   if s:cursorline | set cursorline | endif
@@ -157,17 +156,14 @@ endfunction
 " main function - call with a command to initialize a complete-as-you-type
 " buffer. 2nd optional argument is a dictionary of options
 function! Complete(cmd, ...)
-  let s:cursorline = &cursorline
-  let s:laststatus = &laststatus
+  let s:lines      = &lines
   let s:more       = &more
   let s:ctrlAMap   = maparg("<C-a>", "c")
   let s:execedBufferNr = bufnr('')
   let s:execedWinNr = winnr()
 
-  set laststatus=0
   set nomore
-  set nocursorline
-  if !empty("s:ctrlAMap") | execute "cunmap <C-a>" | endif
+  if !empty(s:ctrlAMap) | execute "cunmap <C-a>" | endif
 
   " initialize argument
   let s:args = " "
@@ -199,6 +195,7 @@ function! Complete(cmd, ...)
   let s:streamBufferNr = bufnr('')
 
   " initialize
+  setl statusline=C\ O\ M\ P\ L\ E\ T\ E
   call s:printCompletions()
   while 1
     if s:completeLoop() == 0
@@ -206,15 +203,10 @@ function! Complete(cmd, ...)
     endif
   endwhile
 
-  " sometimes we get into a nasty state where netrw shits on everything
+  " bd doesn't work from netrw either! yayy
   if getbufvar(s:execedBufferNr, '&ft') == 'netrw'
-    if winheight('') < 10
-      only
-
-    " if this is a scratch buffer because of cancelling out from netrw
-    elseif empty(expand("%:p"))
-      close
-    endif
+    windo silent! if empty(expand('%:p')) | close | endif
   endif
+
   return 0
 endfunction
