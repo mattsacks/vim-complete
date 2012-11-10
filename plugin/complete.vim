@@ -116,7 +116,6 @@ function! s:cleanup()
     exec "silent! cnoremap <C-a> " . s:ctrlAMap
   endif
 
-  if s:cursorline | set cursorline | endif
   return 0
 endfunction
 
