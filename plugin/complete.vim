@@ -30,7 +30,7 @@ function! s:printToStream(lines)
   call s:goToStream()
 
   " clear all text inside of the stream
-  0,$delete
+  0,$delete _
 
   " set its height to the completion list length
   let height = len(a:lines) > s:options.maxheight ?
