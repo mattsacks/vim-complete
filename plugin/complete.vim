@@ -127,8 +127,8 @@ function! s:completeLoop()
   " if the user typed enter
   if input == "\<CR>" 
     call s:cleanup()
+    execute s:execedWinNr . "wincmd w"
     if len(s:completions) > 0
-      execute s:execedWinNr . "wincmd w"
       execute 'silent! ' . s:cmd . ' ' . s:completions[0]
     endif
     return 0
