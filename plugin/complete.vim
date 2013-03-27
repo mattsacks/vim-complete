@@ -175,7 +175,6 @@ function! Complete(cmd, ...)
     if a:cmd =~ '\S\++\S\+$'
       let s:args .= matchstr(a:cmd, '\s\zs\S\+\ze+')
       let s:addArgs .= matchstr(a:cmd, '\s\S\++\zs\S\+\ze$')
-      echom s:addArgs
     else
       let s:args .= matchstr(a:cmd, '\s\zs\S\+\ze$')
     endif
