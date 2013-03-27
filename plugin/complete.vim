@@ -75,10 +75,9 @@ endfunction
 " stream buffer
 function! s:printCompletions()
   exec s:execedWinNr . "wincmd w"
-  let s:completions = s:getCommandCompletions(s:cmd . s:args)
+  let s:completions = s:getCommandCompletions(s:cmd . s:args . s:addArgs)
   call s:printToStream(s:completions)
   redraw
-  echo ':' . s:cmd . s:args
   return 0
 endfunction
 
@@ -166,11 +165,20 @@ function! Complete(cmd, ...)
 
   " initialize argument
   let s:args = " "
+  let s:addArgs = ""
 
   " there's an argument prefix
   if a:cmd =~ '\s\S\+$'
-    let s:cmd = strpart(a:cmd, 0, stridx(a:cmd, ' '))
-    let s:args .= matchstr(a:cmd, '\s\zs\S\+\ze$')
+    let s:cmd = matchstr(a:cmd, '^\ze\S\+\ze\s')
+
+    " if there's an argument postfix (+postfix)
+    if a:cmd =~ '\S\++\S\+$'
+      let s:args .= matchstr(a:cmd, '\s\zs\S\+\ze+')
+      let s:addArgs .= matchstr(a:cmd, '\s\S\++\zs\S\+\ze$')
+      echom s:addArgs
+    else
+      let s:args .= matchstr(a:cmd, '\s\zs\S\+\ze$')
+    endif
   else
     let s:cmd = a:cmd
   endif
