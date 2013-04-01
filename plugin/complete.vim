@@ -20,8 +20,6 @@ function! s:goToStream()
 endfunction
 
 " prints to the stream buffer
-" a second argument of 1 can be passed to append to the stream
-" otherwise, it will overwrite all contents in the stream
 function! s:printToStream(lines)
   if !exists('s:streamWinNr')
     return 0
@@ -120,6 +118,9 @@ endfunction
 
 " the code being executed every second once Complete() is called
 function! s:completeLoop()
+  " display the typed arguments 
+  echom ':' . s:cmd . s:args . s:addArgs
+
   let inputnr = getchar()
   let input   = nr2char(inputnr)
 
